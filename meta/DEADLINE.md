@@ -14,7 +14,12 @@ Markdown is transformed into nice-looking HTML.
 
 > **Also, include the GitHub `https` URL to your repository.**
 
-TODO WRITE / REPLACE
+GitHub Repo URL: `https://github.com/Monkey832m/cs1302-api-app`
+
+Weather Music is a basic weather app where users can search for the current
+weather conditions of a desired location, view said weather, and also get 5 
+song recommendations from said weather conditions, courtesy of AccuWeather and
+iTunes.
 
 ## Part 1.2: APIs
 
@@ -25,32 +30,49 @@ TODO WRITE / REPLACE
 > information are provided below. If your app uses more than two RESTful
 > JSON APIs, then include them with similar formatting.
 
-### API 1
+### AccuWeather: Locations (Text Search)
 
 ```
-https://.../replace/me
+http://dataservice.accuweather.com/locations/v1/search?apikey=k7lOavGLUcon5QNdHIImdpYwAOUCvlCn&q=Athens%2C%20GA&details=true
 ```
 
-> Replace this line with notes (if needed) or remove it (if not needed).
+> Sends a call to AccuWeather's Location Text Search API in order to return
+> a location key, which is needed in the call to Current Conditions to get
+> the weather.
 
-### API 2
+### AccuWeather: Current Conditions
 
 ```
-https://../replace/me
+http://dataservice.accuweather.com/currentconditions/v1/328217?apikey=k7lOavGLUcon5QNdHIImdpYwAOUCvlCn&details=true
 ```
 
-> Replace this line with notes (if needed) or remove it (if not needed).
+> This gets the current weather conditions from AccuWeather. "328217" in the
+> example is the location key from the Text Search API. This API also returns
+> a variable called weatherText, which is passed to the iTunes API as the search
+> term to find song recommendations.
+
+### iTunes
+
+```
+https://itunes.apple.com/search?term=Sunny&media=music&limit=5
+```
+
+> iTunes API to get 5 recommended songs based on the current weather conditions.
+> And by based on, I mean I'm searching the iTunes API with the word "Sunny" or
+> "Mostly Cloudy" and getting 5 songs from that because I thought it was funny.
+> To clarify: YES, it is supposed to work like that.
 
 ## Part 2: New
 
-> What is something new and/or exciting that you learned from working
-> on this project?
+> What is something new and/or exciting that you learned from working on this project?
 
-TODO WRITE / REPLACE
+I was able to learn a lot more about JavaFX, JSON, and APIs. I also learned
+a small Gson fix for AccuWeather's APIs returning variable names in Pascal case,
+which caused 17 check1302 errors, but the Gson fix solved it.
 
 ## Part 3: Retrospect
 
-> If you could start the project over from scratch, what do
-> you think might do differently and why?
+> If you could start the project over from scratch, what do you think might do differently and why?
 
-TODO WRITE / REPLACE
+I would definitely start it a bit earlier so I would have more time to polish
+the UI.

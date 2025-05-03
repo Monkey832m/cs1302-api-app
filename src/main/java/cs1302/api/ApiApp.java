@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Random;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -42,7 +43,12 @@ public class ApiApp extends Application {
         .build();                                     // builds and returns a HttpClient object
 
     /** Google {@code Gson} object for parsing JSON-formatted strings. */
-    public static Gson GSON = new GsonBuilder()
+    public static Gson accuWeatherGSON = new GsonBuilder()
+        .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE) // fix variable names
+        .setPrettyPrinting()                          // enable nice output when printing
+        .create();                                    // builds and returns a Gson object
+        
+    public static Gson iTunesGSON = new GsonBuilder()
         .setPrettyPrinting()                          // enable nice output when printing
         .create();                                    // builds and returns a Gson object
 
@@ -209,6 +215,7 @@ public class ApiApp extends Application {
     /**
      * Gets a location key from AccuWeather's Location Text Search API, whi is then passed along to
      * the conditionApiUrl method in order to form a URL for the Current Conditions API.
+     * @param location - the location being searched
      * @return String URL
      */
     public String getLocationKey(String location) {
@@ -217,7 +224,7 @@ public class ApiApp extends Application {
         // System.out.println("Location: " + location + ", Getting location key...");
         // WARNING: ONLY 50 API CALLS CAN BE MADE PER KEY PER DAY. SECOND KEY PROVIDED
         // Monkey832 API Key: "?apikey=k7lOavGLUcon5QNdHIImdpYwAOUCvlCn&q="
-        // Secondary API Key: "?apikey=Wa23Bmj6Hk80e5QGShIWOEaccahGJ2aO&q="
+        // Secondary API Key: "?apikey=XhZR6WGvI2FZBeT6XwyrYTm3UouswjDC&q="
         try {
             String searchTerm = URLEncoder.encode(location, StandardCharsets.UTF_8);
             String locationUrl = "http://dataservice.accuweather.com/locations/v1/search"
@@ -228,11 +235,11 @@ public class ApiApp extends Application {
                 .send(httpRequest, HttpResponse.BodyHandlers.ofString());
             // DEBUG
             // System.out.println(httpResponse.body());
-            LocationApiResult[] apiFeed = this.GSON.fromJson(httpResponse.body(), 
+            LocationApiResult[] apiFeed = this.accuWeatherGSON.fromJson(httpResponse.body(), 
                 LocationApiResult[].class);
-            locationKey = apiFeed[0].Key;
+            locationKey = apiFeed[0].key;
             Platform.runLater(() -> {
-                this.locationName.setText(apiFeed[0].LocalizedName);
+                this.locationName.setText(apiFeed[0].localizedName);
             });
         } catch (Exception e) {
             Platform.runLater(() -> {
@@ -245,11 +252,12 @@ public class ApiApp extends Application {
     
     /**
      * Formats a Current Conditions API URL search and returns it.
+     * @param locationKey - the locationKey returned by the Text Search API
      * @return String URL
      */
     public String conditionApiUrl(String locationKey) {
         // Monkey832 API Key: "?apikey=k7lOavGLUcon5QNdHIImdpYwAOUCvlCn&details=true";
-        // Secondary API Key: "?apikey=Wa23Bmj6Hk80e5QGShIWOEaccahGJ2aO&details=true";
+        // Secondary API Key: "?apikey=XhZR6WGvI2FZBeT6XwyrYTm3UouswjDC&details=true";
         // DEBUG
         // System.out.println("Location key: " + locationKey + ", Creating Conditions API URL...");
         return "http://dataservice.accuweather.com/currentconditions/v1/" + locationKey
@@ -257,8 +265,8 @@ public class ApiApp extends Application {
     }
     
     /**
-     * Searches the AccuWeather Location and Current Conditions APIs.
-     * @param url - the AccuWeather Current Conditions API URL
+     * Searches the AccuWeather Current Conditions API.
+     * @param conditionsUrl - the AccuWeather Current Conditions API URL
      */
     public void searchAccuWeatherApi(String conditionsUrl) {
         // DEBUG
@@ -268,7 +276,7 @@ public class ApiApp extends Application {
                 .uri(new URI(conditionsUrl)).GET().build();
             HttpResponse<String> httpResponse = HTTP_CLIENT
                 .send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            ConditionsApiResult[] apiFeed = this.GSON.fromJson(httpResponse.body(), 
+            ConditionsApiResult[] apiFeed = this.accuWeatherGSON.fromJson(httpResponse.body(),
                 ConditionsApiResult[].class);
             // DEBUG
             // System.out.println("WeatherText: " + apiFeed[0].WeatherText);
@@ -280,25 +288,25 @@ public class ApiApp extends Application {
             // System.out.println("UV Index: " + apiFeed[0].UVIndex);
             Platform.runLater(() -> {
                 getLocation.setDisable(false);
-                this.icon.setImage(new Image("file:resources/" + apiFeed[0].WeatherIcon + 
+                this.icon.setImage(new Image("file:resources/" + apiFeed[0].weatherIcon + 
                     "-s.png"));
-                this.currentConditions.setText(apiFeed[0].WeatherText);
-                if (!apiFeed[0].IsDayTime) {
+                this.currentConditions.setText(apiFeed[0].weatherText);
+                if (!apiFeed[0].isDayTime) {
                     this.backgroundImg.setFill(Color.BLACK);
-                } else if (apiFeed[0].WeatherIcon > 6 && apiFeed[0].WeatherIcon < 30) {
+                } else if (apiFeed[0].weatherIcon > 6 && apiFeed[0].weatherIcon < 30) {
                     this.backgroundImg.setFill(Color.SLATEGREY);
                 } else {
                     this.backgroundImg.setFill(Color.SKYBLUE);
                 }
-                this.temperature.setText(apiFeed[0].Temperature.Imperial.Value + "\u00B0" + "F");
+                this.temperature.setText(apiFeed[0].temperature.imperial.value + "\u00B0" + "F");
                 this.feelsLike.setText("Feels Like: " + 
-                    apiFeed[0].RealFeelTemperature.Imperial.Value + "\u00B0" + "F");
-                this.windSpeed.setText("Wind: " + apiFeed[0].Wind.Speed.Imperial.Value + " mph " +
-                    apiFeed[0].Wind.Direction.Localized);
-                this.uvIndex.setText("UV Index: " + apiFeed[0].UVIndex);
-                this.humidity.setText("Humidity: " + apiFeed[0].RelativeHumidity + "%");
+                    apiFeed[0].realFeelTemperature.imperial.value + "\u00B0" + "F");
+                this.windSpeed.setText("Wind: " + apiFeed[0].wind.speed.imperial.value + " mph " +
+                    apiFeed[0].wind.direction.localized);
+                this.uvIndex.setText("UV Index: " + apiFeed[0].uVIndex);
+                this.humidity.setText("Humidity: " + apiFeed[0].relativeHumidity + "%");
             });
-            new Thread(() -> searchItunesApi(this.iTunesApiUrl(apiFeed[0].WeatherText))).start();
+            new Thread(() -> searchItunesApi(this.iTunesApiUrl(apiFeed[0].weatherText))).start();
         } catch (Exception e) {
             Platform.runLater(() -> {
                 alertUser(e.toString());
@@ -309,6 +317,7 @@ public class ApiApp extends Application {
     
     /**
      * Formats an iTunes API URL search and returns it.
+     * @param term - the unencoded search term (the current weather conditions)
      * @return String URL
      */
     public String iTunesApiUrl(String term) {
@@ -338,7 +347,8 @@ public class ApiApp extends Application {
                 .send(httpRequest, HttpResponse.BodyHandlers.ofString());
             // DEBUG
             // System.out.println(httpResponse.body());
-            ItunesResponse apiFeed = this.GSON.fromJson(httpResponse.body(), ItunesResponse.class);
+            ItunesResponse apiFeed = this.iTunesGSON.fromJson(httpResponse.body(), 
+                ItunesResponse.class);
             // DEBUG
             // System.out.println("API Feed Result Count: " + apiFeed.resultCount);
             // System.out.println("iTunes Results Size: " + apiFeed.results.length);
@@ -354,7 +364,7 @@ public class ApiApp extends Application {
             Platform.runLater(() -> {
                 for (int i = 0; i < 5; i++) {
                     if (songSet.size() > i) {
-                      songs[i].setText(songSet.get(i));
+                        songs[i].setText(songSet.get(i));
                     }
                 }
             });
