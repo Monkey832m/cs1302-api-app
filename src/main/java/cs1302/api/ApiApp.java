@@ -250,7 +250,8 @@ public class ApiApp extends Application {
     public String conditionApiUrl(String locationKey) {
         // Monkey832 API Key: "?apikey=k7lOavGLUcon5QNdHIImdpYwAOUCvlCn&details=true";
         // Secondary API Key: "?apikey=Wa23Bmj6Hk80e5QGShIWOEaccahGJ2aO&details=true";
-        System.out.println("Location key: " + locationKey + ", Creating Conditions API URL...");
+        // DEBUG
+        // System.out.println("Location key: " + locationKey + ", Creating Conditions API URL...");
         return "http://dataservice.accuweather.com/currentconditions/v1/" + locationKey
             + "?apikey=k7lOavGLUcon5QNdHIImdpYwAOUCvlCn&details=true";
     }
@@ -321,7 +322,7 @@ public class ApiApp extends Application {
      */
     public void searchItunesApi(String url) {
         // DEBUG
-        System.out.println("iTunes API URL: " + url);
+        // System.out.println("iTunes API URL: " + url);
         try {
             Platform.runLater(() -> {
                 for (int i = 0; i < songs.length; i++) {
@@ -335,17 +336,21 @@ public class ApiApp extends Application {
                 .uri(new URI(url)).GET().build();
             HttpResponse<String> httpResponse = HTTP_CLIENT
                 .send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            System.out.println(httpResponse.body());
+            // DEBUG
+            // System.out.println(httpResponse.body());
             ItunesResponse apiFeed = this.GSON.fromJson(httpResponse.body(), ItunesResponse.class);
-            System.out.println("API Feed Result Count: " + apiFeed.resultCount);
-            System.out.println("iTunes Results Size: " + apiFeed.results.length);
+            // DEBUG
+            // System.out.println("API Feed Result Count: " + apiFeed.resultCount);
+            // System.out.println("iTunes Results Size: " + apiFeed.results.length);
             for (ItunesResult result : apiFeed.results) {
                 if (result.artistName != null && result.trackName != null) {
                     songSet.add(result.artistName + " - " + result.trackName);
                 }
-                System.out.println("Song: " + result.artistName + " - " + result.trackName);
+                // DEBUG
+                // System.out.println("Song: " + result.artistName + " - " + result.trackName);
             }
-            System.out.println(songSet);
+            // DEBUG
+            // System.out.println(songSet);
             Platform.runLater(() -> {
                 for (int i = 0; i < 5; i++) {
                     if (songSet.size() > i) {
