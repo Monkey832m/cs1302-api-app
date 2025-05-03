@@ -670,4 +670,3 @@ the University of Georgia or the University System of Georgia.
 <hr>
 
 **Feature Preparation Timestamps:**
->>>>>>> 3b4b21b (converted README rst to gfm/md)
